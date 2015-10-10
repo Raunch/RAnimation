@@ -6,7 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 import android.app.Activity;
+import android.app.Instrumentation;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.widget.GridView;
 import android.widget.SimpleAdapter;
 
@@ -14,6 +17,8 @@ public class MainActivity extends Activity {
     private GridView gview;
     private List<Map<String, Object>> data_list;
     private SimpleAdapter sim_adapter;
+    
+    private static long tempTime = System.currentTimeMillis();
     // 图片封装为一个数组
     private int[] icon = { R.drawable.hello, R.drawable.hello2,
     		R.drawable.hello, R.drawable.hello2,
@@ -52,4 +57,53 @@ public class MainActivity extends Activity {
             
         return data_list;
     }
+
+
+
+	@Override
+	public boolean dispatchKeyEvent(KeyEvent event) {
+		
+		final long currentTime;
+		if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_DOWN) {
+			Log.i("fucking", "get it down");
+			Log.i("fucking", "temp time is " + tempTime);
+			currentTime = System.currentTimeMillis();
+			Log.i("fucking", "current time is " + currentTime);
+			Log.i("fucking","diff is " + (tempTime - currentTime));
+			
+			if (Math.abs(tempTime - currentTime) > 20) {
+				new Thread() {
+					public void run() {
+						try {
+							Instrumentation inst = new Instrumentation();
+							inst.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_DOWN);
+							tempTime = currentTime;
+						} catch (Exception e) {
+							Log.e("Exception when sendPointerSync", e.toString());
+						}
+					}
+				}.start();
+			}
+			
+			return true;
+		} else if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP) {
+			Log.i("fucking", "get it up");
+			new Thread() {
+				public void run() {
+					try {
+						Instrumentation inst = new Instrumentation();
+						inst.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_UP);
+					} catch (Exception e) {
+						Log.e("Exception when sendPointerSync", e.toString());
+					}
+				}
+			}.start();
+			return true;
+		} else {
+			return super.dispatchKeyEvent(event);
+		}
+	}
+	
+    
+    
 }
